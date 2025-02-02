@@ -46,29 +46,13 @@
                 const sheet = workbook.Sheets[sheetName];
                 const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-                displayTable(json);
+                //displayTable(json);
                 calculateFlavorTotals(json);
             };
             reader.readAsArrayBuffer(file);
         });
 
-        function displayTable(data) {
-            const output = document.getElementById('output');
-            output.innerHTML = '';
-
-            const table = document.createElement('table');
-            data.forEach((row, rowIndex) => {
-                const tr = document.createElement('tr');
-                row.forEach(cell => {
-                    const cellElement = rowIndex === 0 ? document.createElement('th') : document.createElement('td');
-                    cellElement.textContent = cell || '';
-                    tr.appendChild(cellElement);
-                });
-                table.appendChild(tr);
-            });
-
-            output.appendChild(table);
-        }
+        
 
         function calculateFlavorTotals(data) {
             const flavorSummary = document.getElementById('flavorSummary');
