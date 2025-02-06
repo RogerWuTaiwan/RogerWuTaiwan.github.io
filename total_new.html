@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Reader and Flavor Counter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Excel Reader and Flavor Counter</h1>
+    <input type="file" id="fileInput" accept=".xlsx, .xls" />
+    <div id="output"></div>
+    <div id="flavorSummary"></div>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // Assume the first sheet contains the data
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+                //displayTable(json);
+                calculateFlavorTotals(json);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        
+
+        function calculateFlavorTotals(data) {
+            const flavorSummary = document.getElementById('flavorSummary');
+            const flavorCounts = {
+                '鮮': 0, '甜': 0, '巧': 0, '麥': 0, '堅': 0, '卵': 0, '莓': 0, '低': 0,
+                '冰鮮': 0, '冰甜': 0, '冰巧': 0, '冰麥': 0, '冰堅': 0, '冰卵': 0, '冰莓': 0, '冰低': 0
+            };
+
+            let totalFlavors = 0;
+            let iceFlavors = 0;
+            let regularFlavors = 0;
+
+            data.forEach((row, index) => {
+                if (index === 0) return; // Skip header row
+                const flavorCell = row[2]; // Assume flavor data is in the second column
+                if (flavorCell) {
+                    const match = flavorCell.match(/([一-龥冰]+)(\d+)/g); // Match "鮮2" format
+                    if (match) {
+                        match.forEach(item => {
+                            const [flavor, count] = [item.slice(0, -1), parseInt(item.slice(-1))];
+                            if (flavorCounts.hasOwnProperty(flavor)) {
+                                flavorCounts[flavor] += count;
+                                totalFlavors += count;
+                                if (flavor.startsWith('冰')) {
+                                    iceFlavors += count;
+                                } else {
+                                    regularFlavors += count;
+                                }
+                            }
+                        });
+                    }
+                }
+            });
+
+            // Sort flavors with "冰鮮" before other "冰" flavors and "巧" at the end
+            const sortedFlavors = Object.keys(flavorCounts).sort((a, b) => {
+                if (a === '冰鮮') return -2;
+                if (b === '冰鮮') return 2;
+            
+                if (a.startsWith('冰') && b.startsWith('冰')) return a.localeCompare(b);
+                if (a === '巧') return 1;
+                if (b === '巧') return -1;
+                return a.localeCompare(b);
+            });
+
+            flavorSummary.innerHTML = '<h2>口味總數</h2>';
+            const table = document.createElement('table');
+
+            const headerRow = document.createElement('tr');
+            headerRow.innerHTML = '<th>口味</th><th>總數</th><th>冰</th><th>熱</th>';
+            table.appendChild(headerRow);
+
+            const dataRow = document.createElement('tr');
+            dataRow.innerHTML = `<td>小計</td><td>${totalFlavors}</td><td>${iceFlavors}</td><td>${regularFlavors}</td>`;
+            table.appendChild(dataRow);
+
+            sortedFlavors.forEach(flavor => {
+                const flavorRow = document.createElement('tr');
+                flavorRow.innerHTML = `<td>${flavor}</td><td colspan="3">${flavorCounts[flavor]}</td>`;
+                table.appendChild(flavorRow);
+            });
+
+            flavorSummary.appendChild(table);
+        }
+    </script>
+</body>
+</html>
