@@ -137,7 +137,7 @@
       tbody.innerHTML = '';
 
       rowsData.slice(4).forEach((row, index) => {
-        const [address, note, flavor, gps] = row;
+        const [address, note, flavor, sum,gps] = row;
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${index + 1}</td>
