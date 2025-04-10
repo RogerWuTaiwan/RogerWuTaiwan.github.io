@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel Reader and Flavor Counter</title>
+    <title>羊奶數量統計</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body {
@@ -26,7 +26,7 @@
     </style>
 </head>
 <body>
-    <h1>Excel Reader and Flavor Counter</h1>
+    <h1>羊奶數量統計</h1>
     <input type="file" id="fileInput" accept=".xlsx, .xls" />
     <div id="output"></div>
     <div id="flavorSummary"></div>
@@ -58,7 +58,7 @@
             const flavorSummary = document.getElementById('flavorSummary');
             const flavorCounts = {
                 '鮮': 0, '甜': 0, '巧': 0, '麥': 0, '堅': 0, '卵': 0, '莓': 0, '低': 0,
-                '冰鮮': 0, '冰甜': 0, '冰巧': 0, '冰麥': 0, '冰堅': 0, '冰卵': 0, '冰莓': 0, '冰低': 0
+                '冰鮮': 0, '冰甜': 0, '冰巧': 0, '冰麥': 0, '冰堅': 0, '冰卵': 0, '冰莓': 0, '冰低': 0, '冰原優': 0,'冰莓優': 0,'冰大鮮': 0,'冰大優': 0
             };
 
             let totalFlavors = 0;
@@ -67,22 +67,27 @@
 
             data.forEach((row, index) => {
                 if (index === 0) return; // Skip header row
-                const flavorCell = row[1]; // Assume flavor data is in the second column
+                const flavorCell = row[2]; // Assume flavor data is in the second column
                 if (flavorCell) {
                     const match = flavorCell.match(/([一-龥冰]+)(\d+)/g); // Match "鮮2" format
                     if (match) {
                         match.forEach(item => {
-                            const [flavor, count] = [item.slice(0, -1), parseInt(item.slice(-1))];
-                            if (flavorCounts.hasOwnProperty(flavor)) {
-                                flavorCounts[flavor] += count;
-                                totalFlavors += count;
-                                if (flavor.startsWith('冰')) {
-                                    iceFlavors += count;
-                                } else {
-                                    regularFlavors += count;
-                                }
-                            }
-                        });
+    const result = item.match(/^([一-龥冰優]+)(\d+)$/); // flavor: 漢字和冰優，count: 數字
+    if (result) {
+        const flavor = result[1];
+        const count = parseInt(result[2]);
+        if (flavorCounts.hasOwnProperty(flavor)) {
+            flavorCounts[flavor] += count;
+            totalFlavors += count;
+            if (flavor.startsWith('冰')) {
+                iceFlavors += count;
+            } else {
+                regularFlavors += count;
+            }
+        }
+    }
+});
+
                     }
                 }
             });
