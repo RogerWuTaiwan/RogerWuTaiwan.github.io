@@ -121,7 +121,8 @@
             <tr>
                 <th>編號</th>
                 <th>地址</th>
-                <th>口味</th>
+                <th>備註</th>
+		<th>口味</th>
                 <th>導航</th>
                 <th>複製</th>
             </tr>
@@ -156,9 +157,9 @@
 
             // 解析數據，從第二行開始 (跳過標題)
             rowsData.slice(4).forEach((row, index) => {
-                const filteredRow = row.filter((_, colIndex) => colIndex !== 2 );
+                const filteredRow = row.filter((_, colIndex) => colIndex !== 3 );
 
-                const [編號, 地址, 口味, 衛星定位] = filteredRow;
+                const [編號, 地址,備註, 口味, 衛星定位] = filteredRow;
 
                 // 創建表格列
                 const tr = document.createElement('tr');
@@ -166,6 +167,7 @@
                     <td>${index + 1}</td>
                     <td>${編號 || ''}</td>
                     <td>${地址 || ''}</td>
+		    <td>${備註 || ''}</td>
                     <td><button onclick="navigateTo('${口味}')">導航</button></td>
                     <td><button class="copy-button" onclick="copyAddress('${編號}')">複製</button></td>
                 `;
