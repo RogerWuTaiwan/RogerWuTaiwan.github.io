@@ -102,9 +102,9 @@
   </style>
 </head>
 <body>
+<div id="flavorSummary"></div>
   <h1>嘉南羊乳每日配送資訊與口味統計</h1>
   <input type="file" id="fileInput" accept=".xls,.xlsx">
-  <button id="calculateButton" onclick="calculateFlavor()">計算口味總數</button>
 
   <table id="dataTable">
     <thead>
@@ -120,7 +120,7 @@
     <tbody></tbody>
   </table>
 
-  <div id="flavorSummary"></div>
+  
 
   <script>
     let rowsData = [];
@@ -151,17 +151,14 @@
         tbody.appendChild(tr);
       });
 
-      document.getElementById('calculateButton').style.display = 'block';
-    });
+// 直接在這裡統計口味
+  const flavorCounts = {
+    '鮮': 0, '甜': 0, '巧': 0, '麥': 0, '堅': 0, '卵': 0, '莓': 0, '低': 0,
+    '冰鮮': 0, '冰甜': 0, '冰巧': 0, '冰麥': 0, '冰堅': 0, '冰卵': 0, '冰莓': 0, '冰低': 0,
+    '冰原優': 0, '冰莓優': 0, '冰大鮮': 0, '冰大優': 0
+  };
 
-    function calculateFlavor() {
-      const flavorCounts = {
-        '鮮': 0, '甜': 0, '巧': 0, '麥': 0, '堅': 0, '卵': 0, '莓': 0, '低': 0,
-        '冰鮮': 0, '冰甜': 0, '冰巧': 0, '冰麥': 0, '冰堅': 0, '冰卵': 0, '冰莓': 0, '冰低': 0,
-        '冰原優': 0, '冰莓優': 0, '冰大鮮': 0, '冰大優': 0
-      };
-
-      let totalFlavors = 0, iceFlavors = 0, hotFlavors = 0;
+let totalFlavors = 0, iceFlavors = 0, hotFlavors = 0;
 
       rowsData.slice(4).forEach(row => {
         const flavorCell = row[2];
@@ -215,7 +212,7 @@
       });
 
       container.appendChild(table);
-    }
+    });
 
     function navigateTo(gps) {
       if (!gps) {
