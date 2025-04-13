@@ -80,6 +80,31 @@
       background-color: #138496;
     }
 
+    .action-menu {
+      position: absolute;
+      background-color: #333;
+      border: 1px solid #888;
+      padding: 10px;
+      z-index: 1000;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(255, 255, 255, 0.2);
+    }
+
+    .action-menu button {
+      display: block;
+      width: 100%;
+      margin: 5px 0;
+      background-color: #444;
+      color: white;
+      border: none;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    .action-menu button:hover {
+      background-color: #555;
+    }
+
     @media (max-width: 768px) {
       table {
         font-size: 14px;
@@ -99,6 +124,48 @@
     #flavorSummary h2 {
       color: #f9f9f9;
     }
+	.action-menu {
+  position: absolute;
+  background-color: #222;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 8px;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.7);
+}
+
+.action-menu button {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  margin: 4px 0;
+  font-size: 14px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.action-menu button:hover {
+  background-color: #666;
+}
+
+.navigate-button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.navigate-button:hover {
+  background-color: #0056b3;
+}
+
+
   </style>
 </head>
 <body>
@@ -112,7 +179,7 @@
         <th>編號</th>
         <th>地址</th>
         <th>備註</th>
-<th>口味</th>
+        <th>口味</th>
         <th>導航</th>
         <th>複製</th>
       </tr>
@@ -120,10 +187,9 @@
     <tbody></tbody>
   </table>
 
-  
-
   <script>
     let rowsData = [];
+    const actions = ['新戶拍照', '收到錢', '紙條拍照', '客戶沒喝', 'gps更新', '備註更新'];
 
     document.getElementById('fileInput').addEventListener('change', async (e) => {
       const file = e.target.files[0];
@@ -138,27 +204,27 @@
       tbody.innerHTML = '';
 
       rowsData.slice(4).forEach((row, index) => {
-        const [address, note, flavor, sum,gps] = row;
+        const [address, note, flavor, sum, gps] = row;
         const tr = document.createElement('tr');
+
         tr.innerHTML = `
           <td>${index + 1}</td>
-          <td>${address || ''}</td>
+          <td class="clickable-address" onclick="showActionMenu('${address}', this, this.parentElement.querySelector('.copy-button'))">${address || ''}</td>
           <td>${note || ''}</td>
- <td>${flavor || ''}</td>
-          <td><button onclick="navigateTo('${gps}')">導航</button></td>
-          <td><button class="copy-button" onclick="copyAddress('${address}')">複製</button></td>
+          <td>${flavor || ''}</td>
+          <td><button class="navigate-button" onclick="navigateTo('${gps}', this)">導航</button></td>
+          <td><button class="copy-button" data-clip="${address}" onclick="copyCustom(this)">複製</button></td>
         `;
         tbody.appendChild(tr);
       });
 
-// 直接在這裡統計口味
-  const flavorCounts = {
-    '鮮': 0, '甜': 0, '巧': 0, '麥': 0, '堅': 0, '卵': 0, '莓': 0, '低': 0,
-    '冰鮮': 0, '冰甜': 0, '冰巧': 0, '冰麥': 0, '冰堅': 0, '冰卵': 0, '冰莓': 0, '冰低': 0,
-    '冰原優': 0, '冰莓優': 0, '冰大鮮': 0, '冰大優': 0
-  };
+      const flavorCounts = {
+        '鮮': 0, '甜': 0, '巧': 0, '麥': 0, '堅': 0, '卵': 0, '莓': 0, '低': 0,
+        '冰鮮': 0, '冰甜': 0, '冰巧': 0, '冰麥': 0, '冰堅': 0, '冰卵': 0, '冰莓': 0, '冰低': 0,
+        '冰原優': 0, '冰莓優': 0, '冰大鮮': 0, '冰大優': 0
+      };
 
-let totalFlavors = 0, iceFlavors = 0, hotFlavors = 0;
+      let totalFlavors = 0, iceFlavors = 0, hotFlavors = 0;
 
       rowsData.slice(4).forEach(row => {
         const flavorCell = row[2];
@@ -214,23 +280,91 @@ let totalFlavors = 0, iceFlavors = 0, hotFlavors = 0;
       container.appendChild(table);
     });
 
-    function navigateTo(gps) {
-      if (!gps) {
-        alert('GPS 資料無效');
-        return;
-      }
-      window.open(`https://www.google.com/maps?q=${gps}`, '_blank');
-    }
+const clickedNavButtons = new Set(); // 用來記錄按過的按鈕
 
-    function copyAddress(address) {
-      if (!address) {
-        alert('地址無效');
+function navigateTo(gps, button) {
+  if (!gps) {
+    alert('GPS 資料無效');
+    return;
+  }
+
+  window.open(`https://www.google.com/maps?q=${gps}`, '_blank');
+
+  // 把目前這個按鈕加進已點過的 Set
+  clickedNavButtons.add(button);
+
+  // 所有導航按鈕根據狀態設定顏色
+  document.querySelectorAll('button.navigate-button').forEach(btn => {
+    if (btn === button) {
+      btn.style.backgroundColor = '#dc3545'; // 紅色
+    } else if (clickedNavButtons.has(btn)) {
+      btn.style.backgroundColor = '#28a745'; // 綠色
+    } else {
+      btn.style.backgroundColor = '#007BFF'; // 預設藍色
+    }
+  });
+}
+
+
+
+    function copyCustom(btn) {
+      const content = btn.getAttribute('data-clip') || '';
+      if (!content) {
+        alert('請先點地址選擇操作');
         return;
       }
-      navigator.clipboard.writeText(address).then(() => {
-        alert('地址已複製到剪貼簿');
+      navigator.clipboard.writeText(content).then(() => {
+        alert(`已複製：${content}`);
       });
     }
+
+    function showActionMenu(address, cell, copyButton) {
+  // 移除其他已開啟的選單
+  document.querySelectorAll('.action-menu').forEach(el => el.remove());
+
+  const menu = document.createElement('div');
+  menu.className = 'action-menu';
+
+  const actions = ['新戶拍照', '收到錢', '紙條拍照', '客戶沒喝', 'gps更新', '備註更新'];
+
+  // 建立動作按鈕
+  actions.forEach(action => {
+    const btn = document.createElement('button');
+    btn.textContent = action;
+    btn.onclick = () => {
+      const fullText = `${address}${action}`;
+      copyButton.setAttribute('data-clip', fullText);
+      cell.innerHTML = `${address} (${action})`;
+      menu.remove();
+    };
+    menu.appendChild(btn);
+  });
+
+  // 加入紅色清除按鈕
+  const clearBtn = document.createElement('button');
+  clearBtn.textContent = '清除';
+  clearBtn.style.backgroundColor = '#dc3545'; // 紅色背景
+  clearBtn.style.color = 'white';
+  clearBtn.onclick = () => {
+    copyButton.setAttribute('data-clip', address);
+    cell.innerHTML = `<span class="clickable-address" onclick="showActionMenu('${address}', this, this.parentElement.querySelector('.copy-button'))">${address}</span>`;
+    menu.remove();
+  };
+  menu.appendChild(clearBtn);
+
+  // 設定選單位置並加入畫面
+  const rect = cell.getBoundingClientRect();
+  menu.style.left = `${rect.left}px`;
+  menu.style.top = `${rect.bottom + window.scrollY}px`;
+  document.body.appendChild(menu);
+}
+
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.action-menu') && !e.target.classList.contains('clickable-address')) {
+        document.querySelectorAll('.action-menu').forEach(el => el.remove());
+      }
+    });
   </script>
 </body>
 </html>
