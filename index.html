@@ -236,7 +236,7 @@
       const flavorCounts = {
         '鮮': 0, '甜': 0, '巧': 0, '麥': 0, '堅': 0, '卵': 0, '莓': 0, '低': 0,
         '冰鮮': 0, '冰甜': 0, '冰巧': 0, '冰麥': 0, '冰堅': 0, '冰卵': 0, '冰莓': 0, '冰低': 0,
-        '冰原優': 0, '冰莓優': 0, '冰大鮮': 0, '冰大優': 0
+        '冰原優': 0, '冰莓優': 0, '冰大鮮': 0, '冰大優': 0,'牛鮮': 0,'莓試': 0,'優試': 0
       };
 
       let totalFlavors = 0, iceFlavors = 0, hotFlavors = 0;
@@ -266,13 +266,14 @@
         }
       });
 
-      const sortedFlavors = Object.keys(flavorCounts).sort((a, b) => {
-        if (a === '冰鮮') return -1;
-        if (b === '冰鮮') return 1;
-        if (a === '巧') return 1;
-        if (b === '巧') return -1;
-        return a.localeCompare(b);
-      });
+const flavorOrder = [
+  '鮮', '甜', '巧', '麥', '堅', '卵', '莓', '低',
+  '冰鮮', '冰甜', '冰巧', '冰麥', '冰堅', '冰卵', '冰莓', '冰低',
+   '冰原優','冰莓優', '冰大鮮' ,'冰大優','牛鮮','莓試','優試'
+  
+];
+
+      const sortedFlavors = flavorOrder.filter(f => flavorCounts.hasOwnProperty(f));
 
       const container = document.getElementById('flavorSummary');
       container.innerHTML = '<h2>口味總數</h2>';
