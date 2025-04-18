@@ -205,7 +205,7 @@
   const data = await file.arrayBuffer();
   const workbook = XLSX.read(data, { type: 'array' });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  rowsData = XLSX.utils.sheet_to_json(sheet, { header: 0 });
+  rowsData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
   const tbody = document.querySelector('#dataTable tbody');
   tbody.innerHTML = '';
