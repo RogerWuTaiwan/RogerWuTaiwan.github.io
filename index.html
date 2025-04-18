@@ -242,7 +242,7 @@
       let totalFlavors = 0, iceFlavors = 0, hotFlavors = 0;
 
       rowsData.slice(4).forEach(row => {
-        const flavorCell = row[2];
+        const flavorCell = row[1];
         if (flavorCell) {
           const matches = flavorCell.match(/([一-龥冰優]+)(\d+)/g);
           if (matches) {
